@@ -23,6 +23,6 @@ Artisan::command('inspire', function () {
 Artisan::command('app:reset-user {user : The ID of the user}', function (string $user) {
     $userObj = User::find($user);
     $userObj->name = fake()->name();
-    $userObj->timezone = fake()->randomElement(UserFactory::getTimezones());
+    $userObj->time_zone = fake()->randomElement(UserFactory::getTimeZones());
     $userObj->save();
-})->purpose('Reset user\'s firstname, lastname, and timezone randomly');
+})->purpose('Reset user\'s name and time zone randomly');
