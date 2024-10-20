@@ -21,8 +21,14 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('app:reset-user {user : The ID of the user}', function (string $user) {
-    $userObj = User::find($user);
-    $userObj->name = fake()->name();
-    $userObj->time_zone = fake()->randomElement(UserFactory::getTimeZones());
-    $userObj->save();
+    try {
+        $userObj = User::findOrFail($user);
+        $userObj->name = fake()->name();
+        $userObj->time_zone = fake()->randomElement(UserFactory::getTimeZones());
+        $userObj->save();
+        $this->info('User reset successfully.');
+    } catch (\Exception $e) {
+        $this->error('User could not be reset.');
+        $this->error($e->getMessage());
+    }
 })->purpose('Reset user\'s name and time zone randomly');
