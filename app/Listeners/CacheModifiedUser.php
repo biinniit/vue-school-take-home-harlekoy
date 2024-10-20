@@ -27,15 +27,23 @@ class CacheModifiedUser
     public function handle(UserModified $event): void
     {
         $modified_user = $event->user;
+        $changed_fields = [];
 
-        // TODO: add 'email', then implement calls to recreate the user in third-party provider
-        if (! $modified_user->wasChanged(['name', 'time_zone'])) {
+        // TODO: add a check for the 'email' field, then implement calls to recreate the user in the
+        // third-party provider
+        if ($modified_user->wasChanged('name'))
+            $changed_fields['name'] = $modified_user->name;
+        if ($modified_user->wasChanged(['time_zone']))
+            $changed_fields['time_zone'] = $modified_user->time_zone;
+        if (count($changed_fields) == 0)
             return;
-        }
+        $changed_fields['email'] = $modified_user->email;
+
+        $cache_key = config('constants.user_sync.cache_key');
+        $cached_value = cache()->store('array')->get($cache_key, '[]');
+        $user_modifications = json_decode($cached_value, true);
+        $user_modifications[$modified_user->email] = $changed_fields;
         
-        cache()->store('array')->forever($modified_user->email, json_encode([
-            'name' => $modified_user->name,
-            'time_zone' => $modified_user->time_zone
-        ]));
+        cache()->store('array')->forever($cache_key, json_encode($user_modifications));
     }
 }
