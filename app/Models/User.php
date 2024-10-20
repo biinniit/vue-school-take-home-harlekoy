@@ -46,15 +46,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($user) {
-            // TODO: add 'email' and implement calls to recreate the user in third-party provider
-            if ($user->isDirty(['name', 'time_zone'])) {
-                event(new UserModified($user));
-            }
-        });
-    }
+    public $dispatchesEvents = [
+        'updated' => UserModified::class,
+    ];
 }
