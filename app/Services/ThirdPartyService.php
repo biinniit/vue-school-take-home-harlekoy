@@ -16,7 +16,7 @@ class ThirdPartyService
             'subscriber' => $subscriber
         ]);
 
-        // TODO: perform HTTP operation
+        // Http::post('API_URL', $api_payload);
 
         $responseBody = '';
         return $responseBody;
@@ -50,7 +50,7 @@ class ThirdPartyService
 
         $api_payload = json_encode($api_payload);
 
-        // TODO: perform HTTP operation
+        // Http::post('API_URL', $api_payload);
 
         $responseBody = '';
         return $responseBody;
