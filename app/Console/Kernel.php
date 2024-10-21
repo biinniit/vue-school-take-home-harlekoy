@@ -13,6 +13,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+
+        // together, implies every 90 seconds
+        $schedule->command('app:sync-user-modifications')->everyThreeMinutes()->runInBackground();
+        $schedule
+            ->command('app:sync-user-modifications', ['--delay' => 90])
+            ->everyThreeMinutes()
+            ->runInBackground();
     }
 
     /**
