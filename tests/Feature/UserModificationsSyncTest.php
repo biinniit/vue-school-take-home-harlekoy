@@ -56,4 +56,42 @@ class UserModificationsSyncTest extends TestCase
         Cache::shouldHaveReceived('forever')
             ->with(static::$cache_key, static::$modification1_cached);
     }
+
+    public function test_1000_users_are_synced_on_multiple_user_updates()
+    {
+        // generate and cache 1001 modifications
+        $modifications = [];
+        for ($i = 0 ; $i < 1001 ; ++$i) {
+            $email = fake()->unique()->email();
+            $modifications[$email] = [
+                'email' => $email,
+                'time_zone' => fake()->randomElement(User::factory()->getTimeZones()),
+            ];
+        }
+        Cache::forever(static::$cache_key, json_encode($modifications));
+
+        $this->artisan('app:sync-user-modifications')->assertSuccessful();
+        $pending_modifications = Cache::get(static::$cache_key);
+        // only 1 user left, out of 1001
+        $this->assertEquals(1, count(json_decode($pending_modifications, true)));
+    }
+
+    public function test_all_users_are_synced_on_few_user_updates()
+    {
+        // generate and cache 101 modifications
+        $modifications = [];
+        for ($i = 0 ; $i < 101 ; ++$i) {
+            $email = fake()->unique()->email();
+            $modifications[$email] = [
+                'email' => $email,
+                'time_zone' => fake()->randomElement(User::factory()->getTimeZones()),
+            ];
+        }
+        Cache::forever(static::$cache_key, json_encode($modifications));
+
+        $this->artisan('app:sync-user-modifications')->assertSuccessful();
+        $pending_modifications = Cache::get(static::$cache_key);
+        // no user left
+        $this->assertEquals(0, count(json_decode($pending_modifications, true)));
+    }
 }
