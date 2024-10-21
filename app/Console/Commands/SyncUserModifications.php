@@ -42,9 +42,9 @@ class SyncUserModifications extends Command
         // This is a cron syntax workaround.
         sleep(intval($this->option('delay')));
         
-        // get synced modifications from the cache
+        // get the set of pending modifications from the cache
         $cache_key = config('constants.user_sync.cache_key');
-        $cached_value = cache()->store('array')->get($cache_key, '[]');
+        $cached_value = cache()->get($cache_key, '[]');
         $user_modifications = json_decode($cached_value, true);
         Log::channel('scheduled')->info('Found {n} pending user modifications.', [
             'n' => count($user_modifications),
@@ -72,10 +72,10 @@ class SyncUserModifications extends Command
         }
 
         // remove synced modifications from the cache
-        array_diff($user_modifications, $sync_modifications);
+        $user_modifications = array_diff_key($user_modifications, $sync_modifications);
         Log::channel('scheduled')->info('Completed with {n} pending user modifications.', [
             'n' => count($user_modifications),
         ]);
-        cache()->store('array')->forever($cache_key, json_encode($user_modifications));
+        cache()->forever($cache_key, json_encode($user_modifications));
     }
 }

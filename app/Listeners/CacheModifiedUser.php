@@ -3,14 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\UserModified;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
-/**
- * We use the "array" cache store for fastest cache storage and retrieval. This doesn't pose a
- * memory balloon issue because we only expect to have about 1,000 user modifications (< 300KB)
- * cached at any given time.
- */
 class CacheModifiedUser
 {
     /**
@@ -40,10 +34,10 @@ class CacheModifiedUser
         $changed_fields['email'] = $modified_user->email;
 
         $cache_key = config('constants.user_sync.cache_key');
-        $cached_value = cache()->store('array')->get($cache_key, '[]');
+        $cached_value = cache()->get($cache_key, '[]');
         $user_modifications = json_decode($cached_value, true);
         $user_modifications[$modified_user->email] = $changed_fields;
         
-        cache()->store('array')->forever($cache_key, json_encode($user_modifications));
+        cache()->forever($cache_key, json_encode($user_modifications));
     }
 }
