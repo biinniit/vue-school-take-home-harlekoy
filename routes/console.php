@@ -45,15 +45,14 @@ Artisan::command('app:sync-user-modifications {--delay=0 : Number of seconds to 
         $cache_key = config('constants.user_sync.cache_key');
         $cached_value = cache()->get($cache_key, '[]');
         $user_modifications = json_decode($cached_value, true);
-        Log::channel('scheduled')->info('Found {n} pending user modifications.', [
-            'n' => count($user_modifications),
-        ]);
+        Log::channel('scheduled')
+            ->info(sprintf('Found %d pending user modifications.', count($user_modifications)));
 
         // call third-party API
         try {
             $sync_modifications = array_slice($user_modifications, 0, 1000);
             if (count($sync_modifications) > 30) {
-                $sync_service->batchRequest(['subscribers'], [$sync_modifications]);
+                $sync_service->batchRequest(['subscribers'], [array_values($sync_modifications)]);
             } else foreach ($sync_modifications as $modification) {
                 // send requests individually (limit 3,600/hr)
                 $sync_service->updateSubscriber($modification);
@@ -72,9 +71,8 @@ Artisan::command('app:sync-user-modifications {--delay=0 : Number of seconds to 
 
         // remove synced modifications from the cache
         $user_modifications = array_diff_key($user_modifications, $sync_modifications);
-        Log::channel('scheduled')->info('Completed with {n} pending user modifications.', [
-            'n' => count($user_modifications),
-        ]);
+        Log::channel('scheduled')->info(sprintf('Completed with %d pending user modifications.',
+            count($user_modifications)));
         cache()->forever($cache_key, json_encode($user_modifications));
     }
 )->purpose('Sync cached user modifications with third-party API');

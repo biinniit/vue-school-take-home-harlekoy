@@ -46,6 +46,8 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    // TODO: dispatch events when updating through the query builder by extending the Eloquent
+    // builder for this model
     public $dispatchesEvents = [
         'updated' => UserModified::class,
     ];
